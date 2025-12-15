@@ -1,12 +1,13 @@
 const express = require("express");
 const mongoose = require("mongoose");
+require("dotenv").config();
 
 const app = express();
 app.use(express.json());
 
-mongoose.connect("mongodb://127.0.0.1:27017/assignmentDB")
+mongoose.connect(process.env.MONGO_URL)
   .then(() => console.log("MongoDB Connected"))
-  .catch(err => console.log(err));
+  .catch(err => console.log("MongoDB Error:", err));
 
 const userSchema = new mongoose.Schema({
   name: { type: String, required: true },
@@ -66,9 +67,7 @@ app.get("/users/average-age", async (req, res) => {
       { $group: { _id: null, averageAge: { $avg: "$age" } } }
     ]);
 
-    res.json({
-      averageAge: result[0]?.averageAge || 0
-    });
+    res.json({ averageAge: result[0]?.averageAge || 0 });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -124,6 +123,8 @@ app.delete("/products/:id", async (req, res) => {
   }
 });
 
-app.listen(3000, () => {
-  console.log("Server running at http://localhost:3000");
+const PORT = process.env.PORT || 3000;
+
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
 });
